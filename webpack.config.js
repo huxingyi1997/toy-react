@@ -1,4 +1,4 @@
-//node的标准export
+// node的标准export
 module.exports = {
   // 入口文件
   entry: {
