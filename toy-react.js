@@ -15,8 +15,11 @@ class ElementWrapper {
       // RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase())
       // 确保事件名小写，将第一个字母转换为小写
       this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase()), value);
+    } else if (name === 'className') { // 配置属性
+      this.root.setAttribute('class', value);
+    } else {
+      this.root.setAttribute(name, value);
     }
-    this.root.setAttribute(name, value);
   }
   // 添加子元素
   // 添加的是component，所以要取出传入的component的root
@@ -78,8 +81,41 @@ export class Component {
   }
   // 定义重绘方法
   rerender() {
-    this._range.deleteContents();
-    this[RENDER_TO_DOM](this._range);
+    // 保存this._range
+    let oldRange = this._range;
+    // 新创建的range没有宽度，但会改变oldRange的宽度
+    let range = document.createRange();
+    // 新创建的range在this._range的start处
+    range.setStart(oldRange.startContainer, oldRange.startOffset);
+    range.setEnd(oldRange.startContainer, oldRange.startOffset);
+    this[RENDER_TO_DOM](range);
+
+    // 重设oldRange的start节点，跳过插入的range
+    oldRange.setStart(range.endContainer, range.endOffset);
+    // 清除oldRange的内容
+    oldRange.deleteContents();
+  }
+  // Component的setState方法
+  setState(newState) {
+    // state为null时的处理
+    if (this.state === null || typeof this.state !== 'object') {
+      this.state = newState;
+      this.rerender();
+      return;
+    }
+    // 采用递归的方式访问state
+    let merge = (oldState, newState) => {
+      for (let p in newState) {
+        if (oldState[p] === null || typeof oldState[p] !== 'object') {
+          oldState[p] = newState[p];
+        } else {
+          // 如果oldSate的p属性为对象，那么就递归调用merge，实现深拷贝
+          merge(oldState[p], newState[p]);
+        }
+      }
+    }
+    merge(this.state, newState);
+    this.rerender();
   }
 }
 
@@ -101,6 +137,10 @@ export function createElement(tagType, attributes, ...children) {
   // 扩展运算符将children包装为一个数组
   let insertChildren = (children) => {
     for (let child of children) {
+      // 如果child为null，不做任何处理
+      if (child === null) {
+        continue;
+      }
       // 将child创建为文本节点，如果child是文本节点
       if (typeof child === 'string') {
         child = new TextWrapper(child);
