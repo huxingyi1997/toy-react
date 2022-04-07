@@ -1,4 +1,4 @@
-import { createElement, Component, render } from './toy-react.js'
+import { Component, ToyReact } from './toy-react.js';
 
 // Square 组件渲染了一个单独的 <button>
 class Square extends Component {
@@ -211,7 +211,11 @@ class Game extends Component {
 
 // ========================================
 
-render(<Game />, document.getElementById("root"));
+ToyReact.render(<Game />, document.getElementById("root"));
+
+// let game = <Game/>;
+
+// console.log(game.vdom);
 
 // 判断胜者
 function calculateWinner(squares) {

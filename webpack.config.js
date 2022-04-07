@@ -16,8 +16,8 @@ module.exports = {
           // 配置babel-loader
           options: {
             presets: ['@babel/preset-env'],
-            // 这样打包后的‘React.createElement就会变成‘createElement’
-            plugins: [['@babel/plugin-transform-react-jsx', {pragma: 'createElement'}]]
+            // 这样打包后的‘React.createElement就会变成‘ToyReact.createElement’
+            plugins: [['@babel/plugin-transform-react-jsx', {pragma: 'ToyReact.createElement'}]]
           }
         }
       },
